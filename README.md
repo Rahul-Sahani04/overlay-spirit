@@ -1,6 +1,6 @@
-# Overlay Spirit 🎉
+# Overlay Spirit 🦄
 
-![Overlay Spirit](https://media.tenor.com/Zh-kW5K_X0kAAAAi/neko-anime.gif)
+![Overlay Spirit](https://gifdb.com/images/high/rin-tohsaka-anime-banner-7t971wsgn2r6juwq.webp)
 
 Overlay Spirit is an Electron app that displays motivational messages based on screen content. It captures screenshots, sends them to an AI for analysis, and displays the AI-generated motivational messages on your screen. Perfect for keeping your spirits high while you work! 🚀
 
