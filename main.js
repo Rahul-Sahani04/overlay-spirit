@@ -13,14 +13,15 @@ const OpenAI = require("openai");
 require("dotenv").config();
 
 const token = process.env.GITHUB_TOKEN;
+
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o";
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
-    width: 300,
-    height: 400,
+    width: 250,
+    height: 300,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -29,8 +30,8 @@ function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false,
     },
-    x: width - 200,
-    y: height - 400,
+    x: width - 250,
+    y: height - 325,
   });
 
   win.loadFile("index.html");
