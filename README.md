@@ -80,6 +80,10 @@ overlay-spirit/
 ![Screenshot2](Assets/SS2.png) 
 -->
 
+## Development Status 🚧
+
+<img alt="Under Development" src="https://img.shields.io/badge/status-under development-orange">
+
 ## Contributing 🤝
 
 Contributions are welcome! Please open an issue or submit a pull request.
