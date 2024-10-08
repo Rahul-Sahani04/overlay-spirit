@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motivation Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: transparent;
+        }
+
+        .overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            /* Optional message background */
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .anime-character {
+            width: 200px;
+            height: auto;
+        }
+
+        .message {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .log {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <img class="anime-character" src="https://media.tenor.com/Zh-kW5K_X0kAAAAi/neko-anime.gif"
+        id="animeCharacter"
+            alt="Anime Character">
+        <div class="message" id="motivationalMessage">Loading motivation...</div>
+
+        <!-- <h2 class="log">Log Messages</h2>
+        <div class="log" id="logMessages"></div> -->
+    </div>
+
+    <script>
+        // Capture the screenshot and send it for AI analysis
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await window.electronAPI.captureScreen();
+                // Update the message in the HTML
+                document.getElementById("motivationalMessage").textContent = response;
+            } catch (error) {
+                console.error(error);
+                const quotes = ["You are doing great!", "Keep up the good work!", "You are awesome!"];
+                document.getElementById("motivationalMessage").textContent = quotes[Math.floor(Math.random() * quotes.length)];
+            }
+        });
+
+        // Listen for log messages from the main process
+        window.electronAPI.onLogMessage((message) => {
+            const logMessages = document.getElementById("logMessages");
+            const logEntry = document.createElement("div");
+            logEntry.textContent = message;
+            logMessages.appendChild(logEntry);
+        });
+
+        async function updateAnimeCharacter(){
+            const res = await fetch('https://api.waifu.pics/sfw/happy');
+            const data = await res.json();
+            document.getElementById("animeCharacter").src = data.url;
+
+        }
+
+        function updateQuote() {
+            // Capture the screenshot and send it for AI analysis
+            window.electronAPI.captureScreen()
+                .then((response) => {
+                    // Update the message in the HTML
+                    updateAnimeCharacter();
+                    document.getElementById("motivationalMessage").textContent = response;
+                })
+                .catch((error) => {
+                    console.error(error);
+                    updateAnimeCharacter();
+                    const quotes = ["You are doing great!", "Keep up the good work!", "You are awesome!"];
+                    document.getElementById("motivationalMessage").textContent = quotes[Math.floor(Math.random() * quotes.length)];
+                })
+                .finally(() => {
+                    // Schedule the next update at a random interval between 5 and 15 seconds
+                    const randomDelay = Math.floor(Math.random() * 10000) + 10000;
+                    setTimeout(updateQuote, randomDelay);
+                });
+
+            // Schedule the next update at a random interval between 5 and 15 seconds
+            // const randomDelay = Math.floor(Math.random() * 10000) + 5000;
+            // setTimeout(updateQuote, randomDelay);
+        }
+
+        // Start the update loop
+        updateQuote();
+    </script>
+</body>
+
+</html>

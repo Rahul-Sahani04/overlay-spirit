@@ -1,0 +1,23 @@
+{
+  "name": "overlay-spirit",
+  "description": "An Electron app that displays motivational messages based on screen content.",
+  "main": "main.js",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . --overwrite"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "electron": "^32.1.2",
+    "dotenv": "^16.4.5",
+    "mac-screen-capture-permissions": "^2.1.0",
+    "openai": "^4.67.2",
+    "screenres": "^2.0.1"
+  }
+}
