@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; img-src 'self' data: https://api.waifu.pics https://media.tenor.com;" />
     <title>Motivation Overlay</title>
     <style>
         body {
@@ -60,19 +61,6 @@
     </div>
 
     <script>
-        // Capture the screenshot and send it for AI analysis
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const response = await window.electronAPI.captureScreen();
-                // Update the message in the HTML
-                document.getElementById("motivationalMessage").textContent = response;
-            } catch (error) {
-                console.error(error);
-                const quotes = ["You are doing great!", "Keep up the good work!", "You are awesome!"];
-                document.getElementById("motivationalMessage").textContent = quotes[Math.floor(Math.random() * quotes.length)];
-            }
-        });
-
         // Listen for log messages from the main process
         window.electronAPI.onLogMessage((message) => {
             const logMessages = document.getElementById("logMessages");

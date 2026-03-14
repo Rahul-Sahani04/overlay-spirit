@@ -14,6 +14,11 @@ require("dotenv").config();
 
 const token = process.env.GITHUB_TOKEN;
 
+if (!token) {
+  console.error("FATAL: GITHUB_TOKEN is missing in the environment. Please setup the .env file.");
+  process.exit(1);
+}
+
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o";
 
@@ -35,77 +40,32 @@ function createWindow() {
   });
 
   win.loadFile("index.html");
-
-  // Send log messages to the renderer process
-  ipcMain.on("log-message", (event, message) => {
-    win.webContents.send("log-message", message);
-  });
-}
-
-/**
- * Get the data URL of an image file.
- * @param {string} imageFile - The path to the image file.
- * @param {string} imageFormat - The format of the image file. For example: "jpeg", "png".
- * @returns {string} The data URL of the image.
- */
-function getImageDataUrl(imageFile, imageFormat) {
-  try {
-    const imageBuffer = fs.readFileSync(imageFile);
-    const imageBase64 = imageBuffer.toString("base64");
-    return `data:image/${imageFormat};base64,${imageBase64}`;
-  } catch (error) {
-    console.error(`Could not read '${imageFile}'.`);
-    console.error(
-      "Set the correct path to the image file before running this sample."
-    );
-    process.exit(1);
-  }
 }
 
 // Handle the capture-screenshot event from the renderer process
-ipcMain.handle("capture-screenshot", async () => {
+ipcMain.handle("capture-screenshot", async (event) => {
   try {
-    // ipcMain.emit("log-message", null, "Capturing screenshot...");
-
     const sources = await desktopCapturer.getSources({ types: ["screen"] });
     const screenSource = sources[0]; // You can select the source you want here
 
-    const imagePath = path.join(app.getPath("temp"), "screenshot.png");
-    const writeStream = createWriteStream(imagePath);
+    // Resize to a maximum reasonable dimension before converting
+    const scaledThumbnail = screenSource.thumbnail.resize({ width: 1024 });
+    const imageDataUrl = scaledThumbnail.toDataURL(); // Data URL in base64
 
-    const image = screenSource.thumbnail.toPNG(); // Get the PNG image from the screen source
-    writeStream.write(image);
-    writeStream.end();
-
-    return new Promise((resolve, reject) => {
-      writeStream.on("finish", async () => {
-        console.log("Screenshot saved: ", imagePath);
-        // ipcMain.emit("log-message", null, `Screenshot saved: ${imagePath}`);
-        const response = await sendImageToAI(imagePath);
-        resolve(response);
-      });
-      writeStream.on("error", (error) => {
-        console.error("Error saving screenshot: ", error);
-        ipcMain.emit("log-message", null, `Error saving screenshot: ${error}`);
-        reject(error);
-      });
-    });
+    const response = await sendImageToAI(imageDataUrl, event);
+    return response;
   } catch (error) {
     console.error("Error capturing screenshot: ", error);
-    ipcMain.emit("log-message", null, `Error capturing screenshot: ${error}`);
+    ipcMain.emit("log-message", event, `Error capturing screenshot: ${error}`);
     throw error; // Propagate the error
   }
 });
 
 // Function to send image to AI
-async function sendImageToAI(imagePath) {
+async function sendImageToAI(imageDataUrl, event) {
   const client = new OpenAI({ baseURL: endpoint, apiKey: token });
 
   try {
-    const imageDataUrl = getImageDataUrl(imagePath, "png");
-
-    //   ipcMain.emit("log-message", null, `Sending image to AI: ${imageDataUrl}`);
-
     const response = await client.chat.completions.create({
       messages: [
         {
@@ -129,19 +89,18 @@ async function sendImageToAI(imagePath) {
         },
       ],
       model: modelName,
-      // images: [{ image_url: { url: imageDataUrl } }],
     });
 
     ipcMain.emit(
       "log-message",
-      null,
+      event,
       `AI response: ${response.choices[0].message.content}`
     );
 
     return response.choices[0].message.content;
   } catch (error) {
     console.error("Error sending image to AI: ", error);
-    ipcMain.emit("log-message", null, `Error sending image to AI: ${error}`);
+    ipcMain.emit("log-message", event, `Error sending image to AI: ${error}`);
     return null;
   }
 }
@@ -155,4 +114,11 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+// Event listener for sending messages back to the renderer process safely
+ipcMain.on("log-message", (event, message) => {
+  if (event && event.sender && !event.sender.isDestroyed()) {
+    event.sender.send("log-message", message);
+  }
 });
